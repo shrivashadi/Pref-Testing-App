@@ -1,14 +1,16 @@
-name: Performance Testing CI
+name: CI with Performance and Security Testing
 
 on: [push, pull_request]
 
 jobs:
-  performance-test:
+  performance-and-security:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # SonarQube scan ke sahi analysis ke liye depth zero zaroorat hoti hai
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -21,9 +23,20 @@ jobs:
         node index.js &
         sleep 5
 
-    - name: Download and Run k6 Binary
+    # ==========================================
+    # TASK 5: PERFORMANCE TESTING (K6)
+    # ==========================================
+     bondage- name: Download and Run k6 Binary
       run: |
         wget https://github.com/grafana/k6/releases/download/v0.51.0/k6-v0.51.0-linux-amd64.tar.gz
         tar -xvzf k6-v0.51.0-linux-amd64.tar.gz
         sudo cp k6-v0.51.0-linux-amd64/k6 /usr/local/bin/
         k6 run script.js
+
+    # ==========================================
+    # TASK 6: SECURITY TESTING (SONARQUBE SCAN)
+    # ==========================================
+    - name: Run SonarQube Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
